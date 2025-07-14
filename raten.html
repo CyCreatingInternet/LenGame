@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gravitationsspiel</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #00111a, #000);
+      height: 100%;
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      color: white;
+      font-family: sans-serif;
+      background: rgba(0,0,0,0.4);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.9em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">
+    Ziehe mit dem Finger oder der Maus, um Planeten zu platzieren.<br>
+    Ziel: Erzeuge stabile Umlaufbahnen!
+  </div>
+  <canvas id="game"></canvas>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const G = 0.1;
+    const bodies = [];
+    const star = { x: canvas.width / 2, y: canvas.height / 2, mass: 5000 };
+
+    let mouseDown = false;
+    let startX = 0, startY = 0;
+    let mouseX = 0, mouseY = 0;
+
+    class Body {
+      constructor(x, y, vx, vy) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.mass = 5;
+      }
+      update() {
+        const dx = star.x - this.x;
+        const dy = star.y - this.y;
+        const distSq = dx * dx + dy * dy;
+        const force = G * star.mass / distSq;
+        const angle = Math.atan2(dy, dx);
+        this.vx += force * Math.cos(angle);
+        this.vy += force * Math.sin(angle);
+        this.x += this.vx;
+        this.y += this.vy;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#4cf";
+        ctx.fill();
+      }
+    }
+
+    function drawStar() {
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, 10, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffdd55";
+      ctx.fill();
+    }
+
+    function drawArrow(x1, y1, x2, y2) {
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStar();
+      for (let b of bodies) {
+        b.update();
+        b.draw();
+      }
+      if (mouseDown) {
+        drawArrow(startX, startY, mouseX, mouseY);
+      }
+      requestAnimationFrame(loop);
+    }
+
+    function startDrag(x, y) {
+      mouseDown = true;
+      startX = x;
+      startY = y;
+    }
+
+    function endDrag(x, y) {
+      if (!mouseDown) return;
+      mouseDown = false;
+      const dx = x - startX;
+      const dy = y - startY;
+      bodies.push(new Body(startX, startY, dx * 0.05, dy * 0.05));
+    }
+
+    function updateMouse(x, y) {
+      mouseX = x;
+      mouseY = y;
+    }
+
+    canvas.addEventListener("mousedown", e => startDrag(e.clientX, e.clientY));
+    canvas.addEventListener("mouseup", e => endDrag(e.clientX, e.clientY));
+    canvas.addEventListener("mousemove", e => updateMouse(e.clientX, e.clientY));
+
+    canvas.addEventListener("touchstart", e => {
+      const touch = e.touches[0];
+      startDrag(touch.clientX, touch.clientY);
+    });
+    canvas.addEventListener("touchend", e => {
+      const touch = e.changedTouches[0];
+      endDrag(touch.clientX, touch.clientY);
+    });
+    canvas.addEventListener("touchmove", e => {
+      const touch = e.touches[0];
+      updateMouse(touch.clientX, touch.clientY);
+    });
+
+    loop();
+  </script>
+</body>
+</html>
