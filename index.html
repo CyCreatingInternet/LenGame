@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman</title>
+    <style>
+        body {
+            background-color: grey;
+            font-family: Arial, sans-serif;
+            background-image: url('background.png'); 
+        }
+        .start {
+            background-color: antiquewhite;
+            border: 2px solid grey;
+            border-radius: 15px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+        }
+        .guessInput {
+            width: 200px;
+            height: 30px;
+            border-radius: 15px;
+            color: grey;
+            font-weight: bold;
+            background-color: antiquewhite;
+            border: 2px solid grey;
+        }
+        .guesstheButton {
+            width: 200px;
+            height: 30px;
+            border-radius: 15px;
+            background-color: grey;
+            color: antiquewhite;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        #wordDisplay {
+            font-size: 24px;
+            letter-spacing: 10px;
+            margin: 20px 0;
+        }
+        #message {
+            font-weight: bold;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+.footer-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 15px 0;
+    z-index: 1000;
+}
+
+.nav-button {
+    background-color: antiquewhite;
+    color: grey;
+    border: 2px solid grey;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-weight: bold;
+    text-decoration: none;
+
+}
+
+.nav-button:hover {
+    background-color: grey;
+    color: antiquewhite;
+    transform: scale(1.05);
+}
+
+    </style>
+</head>
+<body>
+<footer>
+    <nav class="footer-nav">
+        <a href="index.html" class="nav-button">Hangman</a>
+        <a href="übersicht.html" class="nav-button">Übersicht</a>
+        <a href="flappybird.html" class="nav-button">Flappy Ball</a>
+    </nav>
+</footer>
+    <div class="start">
+        <h1>Hangman</h1>
+        <p>Find the Word!</p>
+        
+        <p id="wordDisplay"></p>
+        <p>Wrong guesses: <span id="wrongGuesses"></span></p>
+        <p>Tries left: <span id="triesLeft"></span></p>
+
+        <input type="text" id="guessInput" class="guessInput" placeholder="Enter a Letter" maxlength="1">
+        <br>
+        <button id="guesstheButton" class="guesstheButton">Guess</button>
+
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const wordList = ["javascript", "hangman", "programming", "computer", "internet"];
+        const secretWord = wordList[Math.floor(Math.random() * wordList.length)].toLowerCase();
+        let displayedWord = Array(secretWord.length).fill("_");
+        let wrongGuesses = [];
+        let maxTries = 6;
+
+        const wordDisplay = document.getElementById("wordDisplay");
+        const wrongGuessesDisplay = document.getElementById("wrongGuesses");
+        const triesLeftDisplay = document.getElementById("triesLeft");
+        const guessInput = document.getElementById("guessInput");
+        const guesstheButton = document.getElementById("guesstheButton");
+        const message = document.getElementById("message");
+
+        function updateDisplay() {
+            wordDisplay.textContent = displayedWord.join(" ");
+            wrongGuessesDisplay.textContent = wrongGuesses.join(", ");
+            triesLeftDisplay.textContent = maxTries - wrongGuesses.length;
+        }
+
+        function checkGameStatus() {
+            if (!displayedWord.includes("_")) {
+                message.textContent = "🎉 You won!";
+                guesstheButton.disabled = true;
+                guessInput.disabled = true;
+            } else if (wrongGuesses.length >= maxTries) {
+                message.textContent = `😢 You lost! The word was: ${secretWord}`;
+                wordDisplay.textContent = secretWord.split("").join(" ");
+                guesstheButton.disabled = true;
+                guessInput.disabled = true;
+            }
+        }
+
+        guesstheButton.addEventListener("click", () => {
+            const guess = guessInput.value.toLowerCase();
+            if (!guess.match(/[a-z]/) || guess.length !== 1) {
+                alert("Please enter a valid single letter.");
+                guessInput.value = "";
+                return;
+            }
+
+            if (displayedWord.includes(guess) || wrongGuesses.includes(guess)) {
+                alert("You already guessed that letter.");
+                guessInput.value = "";
+                return;
+            }
+
+            if (secretWord.includes(guess)) {
+                for (let i = 0; i < secretWord.length; i++) {
+                    if (secretWord[i] === guess) {
+                        displayedWord[i] = guess;
+                    }
+                }
+            } else {
+                wrongGuesses.push(guess);
+            }
+
+            guessInput.value = "";
+            updateDisplay();
+            checkGameStatus();
+        });
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
