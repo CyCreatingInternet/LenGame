@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flappy Ball</title>
   <style>
     * {
@@ -16,22 +17,34 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      position: relative;
+      overflow: hidden;
     }
 
     canvas {
       background-color: #fff;
       border: 4px solid #444;
       border-radius: 12px;
+      max-width: 95vw;
+      max-height: 90vh;
+      width: 100%;
+      height: auto;
+      display: block;
     }
 
     .overlay {
       position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
       color: #222;
       background-color: rgba(255, 255, 255, 0.95);
-      padding: 30px;
+      padding: 5vw;
       border-radius: 20px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      width: 80vw;
+      max-width: 400px;
     }
 
     #startScreen, #gameOverScreen {
@@ -40,11 +53,11 @@
 
     h1 {
       margin-top: 0;
-      font-size: 2.5em;
+      font-size: 6vw;
     }
 
     button {
-      padding: 10px 20px;
+      padding: 12px 24px;
       font-size: 1.2em;
       margin-top: 20px;
       border: none;
@@ -53,44 +66,46 @@
       color: white;
       cursor: pointer;
       transition: background 0.3s;
+      width: 100%;
     }
 
     button:hover {
       background-color: #388E3C;
     }
+
     .footer-nav {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background-color: transparent;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 15px 0;
-    z-index: 1000;
-}
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: transparent;
+      display: flex;
+      justify-content: center;
+      gap: 5vw;
+      padding: 15px 0;
+      z-index: 1000;
+    }
 
-.nav-button {
-    background-color: antiquewhite;
-    color: grey;
-    border: 2px solid grey;
-    border-radius: 20px;
-    padding: 10px 20px;
-    font-weight: bold;
-    text-decoration: none;
+    .nav-button {
+      background-color: antiquewhite;
+      color: grey;
+      border: 2px solid grey;
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-weight: bold;
+      text-decoration: none;
+      font-size: 1em;
+    }
 
-}
-
-.nav-button:hover {
-    background-color: grey;
-    color: antiquewhite;
-    transform: scale(1.05);
-}
-
+    .nav-button:hover {
+      background-color: grey;
+      color: antiquewhite;
+      transform: scale(1.05);
+    }
   </style>
 </head>
+<body>
 
-  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  <canvas id="gameCanvas"></canvas>
 
   <!-- Startscreen -->
   <div id="startScreen" class="overlay">
@@ -112,6 +127,17 @@
     const startScreen = document.getElementById('startScreen');
     const gameOverScreen = document.getElementById('gameOverScreen');
     const finalScore = document.getElementById('finalScore');
+
+    // Dynamisches Canvas
+    function resizeCanvas() {
+      const ratio = 2 / 3; // Breite:Höhe-Verhältnis
+      const width = Math.min(window.innerWidth * 0.95, 400);
+      canvas.width = width;
+      canvas.height = width / ratio;
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
 
     let running = false;
     let gameOver = false;
@@ -209,7 +235,7 @@
       running = true;
       gameOver = false;
       score = 0;
-      bird.y = 250;
+      bird.y = canvas.height / 2;
       bird.velocity = 0;
       pipes = [];
       pipeTimer = 0;
@@ -255,7 +281,14 @@
       }
     });
 
-    // Zeige Startscreen beim Laden
+    canvas.addEventListener("touchstart", () => {
+      if (running) {
+        bird.jump();
+      } else if (!gameOver) {
+        startGame();
+      }
+    });
+
     startScreen.style.display = "block";
   </script>
 </body>
