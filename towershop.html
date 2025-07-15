@@ -128,7 +128,7 @@
   </div>
 
   <div id="shop">
-    <div id="shopInfo">Tippe auf ein Skin, um es zu kaufen oder zu aktivieren (20 Coins)</div>
+    <div id="shopInfo">Tippe auf ein Skin, um es zu kaufen oder zu aktivieren</div>
   </div>
 
   <canvas id="gameCanvas"></canvas>
@@ -153,12 +153,22 @@
     let cameraOffset = 0;
     let gameOver = false;
 
+    const skinPrices = {
+      classic: 0,
+      rainbow: 50,
+      fire: 50,
+      ice: 50,
+      dark: 50,
+      gold: 1000
+    };
+
     const skins = {
-      "classic": ["#4CAF50"],
-      "rainbow": ["#f44336", "#ff9800", "#ffeb3b", "#4caf50", "#2196f3", "#9c27b0"],
-      "fire": ["#ff5722", "#ff9800", "#ffc107"],
-      "ice": ["#00bcd4", "#03a9f4", "#2196f3"],
-      "dark": ["#444", "#666", "#222"]
+      classic: ["#4CAF50"],
+      rainbow: ["#f44336", "#ff9800", "#ffeb3b", "#4caf50", "#2196f3", "#9c27b0"],
+      fire: ["#ff5722", "#ff9800", "#ffc107"],
+      ice: ["#00bcd4", "#03a9f4", "#2196f3"],
+      dark: ["#444", "#666", "#222"],
+      gold: ["#FFD700", "#FFC700", "#FFB700"]
     };
 
     const skinColors = Object.entries(skins);
@@ -264,7 +274,7 @@
       shop.innerHTML = '';
       const info = document.createElement("div");
       info.id = "shopInfo";
-      info.textContent = "Tippe auf ein Skin, um es zu kaufen oder zu aktivieren (20 Coins)";
+      info.textContent = "Tippe auf ein Skin, um es zu kaufen oder zu aktivieren";
       shop.appendChild(info);
 
       skinColors.forEach(([name, colors]) => {
@@ -273,24 +283,26 @@
         div.style.background = colors.length > 1 ? `linear-gradient(45deg, ${colors.join(",")})` : colors[0];
         div.textContent = name;
 
+        const price = skinPrices[name] ?? 50;
+
         if (!unlockedSkins.includes(name)) {
           div.classList.add("locked");
 
           const priceTag = document.createElement("div");
           priceTag.className = "price-tag";
-          priceTag.textContent = "20 Coins";
+          priceTag.textContent = `${price} Coins`;
           div.appendChild(priceTag);
 
           div.addEventListener("click", () => {
-            if (coins >= 20) {
-              coins -= 20;
+            if (coins >= price) {
+              coins -= price;
               unlockedSkins.push(name);
               localStorage.setItem("coins", coins);
               localStorage.setItem("unlockedSkins", JSON.stringify(unlockedSkins));
               updateUI();
               createShop();
             } else {
-              alert("Du brauchst 20 Coins, um dieses Skin zu kaufen!");
+              alert(`Du brauchst ${price} Coins, um dieses Skin zu kaufen!`);
             }
           });
         } else {
