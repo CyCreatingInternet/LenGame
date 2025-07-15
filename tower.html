@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tower Builder</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url('background.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      touch-action: manipulation;
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    #scoreDisplay {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.85);
+      padding: 10px 20px;
+      border-radius: 15px;
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #333;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+      z-index: 1;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="scoreDisplay">Score: 0</div>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Responsive canvas
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    const BLOCK_HEIGHT = 30;
+    let stack = [];
+    let currentBlock;
+    let isGameOver = false;
+    let cameraOffset = 0;
+    let score = 0;
+
+    const colors = ["#4CAF50", "#2196F3", "#FF9800", "#E91E63", "#9C27B0"];
+
+    function initGame() {
+      stack = [{ x: canvas.width / 2 - 100, y: 0, width: 200 }];
+      score = 0;
+      cameraOffset = 0;
+      isGameOver = false;
+
+      currentBlock = {
+        x: 0,
+        y: BLOCK_HEIGHT,
+        width: 200,
+        dir: 3,
+        colorIndex: 1
+      };
+
+      document.getElementById("scoreDisplay").textContent = "Score: 0";
+      update();
+    }
+
+    function drawBlock(block, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(block.x, y, block.width, BLOCK_HEIGHT);
+      ctx.strokeStyle = "rgba(0,0,0,0.1)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(block.x, y, block.width, BLOCK_HEIGHT);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const baseY = stack[stack.length - 1].y;
+
+      // Kamera-Offset
+      cameraOffset += ((currentBlock.y - cameraOffset - canvas.height / 2 + 100) * 0.05);
+
+      for (let i = 0; i < stack.length; i++) {
+        const block = stack[i];
+        drawBlock(block, canvas.height - (block.y - cameraOffset), colors[i % colors.length]);
+      }
+
+      if (!isGameOver) {
+        drawBlock(currentBlock, canvas.height - (currentBlock.y - cameraOffset), colors[currentBlock.colorIndex % colors.length]);
+      }
+    }
+
+    function gameOver() {
+      isGameOver = true;
+      document.getElementById("scoreDisplay").textContent += " - Game Over (Tippe zum Neustart)";
+    }
+
+    function placeBlock() {
+      const prev = stack[stack.length - 1];
+      const overlap = Math.min(currentBlock.x + currentBlock.width, prev.x + prev.width)
+                    - Math.max(currentBlock.x, prev.x);
+
+      if (overlap <= 0) {
+        gameOver();
+        return;
+      }
+
+      const newWidth = overlap;
+      const newX = Math.max(currentBlock.x, prev.x);
+
+      stack.push({ x: newX, y: currentBlock.y, width: newWidth });
+      score++;
+      document.getElementById("scoreDisplay").textContent = "Score: " + score;
+
+      // Neues bewegliches Blockobjekt
+      currentBlock = {
+        x: 0,
+        y: stack[stack.length - 1].y + BLOCK_HEIGHT,
+        width: newWidth,
+        dir: 2.5 + score * 0.1,
+        colorIndex: score
+      };
+    }
+
+    function update() {
+      if (isGameOver) return;
+
+      currentBlock.x += currentBlock.dir;
+      if (currentBlock.x <= 0 || currentBlock.x + currentBlock.width >= canvas.width) {
+        currentBlock.dir *= -1;
+      }
+
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    canvas.addEventListener("click", () => {
+      if (isGameOver) {
+        initGame();
+      } else {
+        placeBlock();
+      }
+    });
+
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      canvas.click();
+    }, { passive: false });
+
+    initGame();
+  </script>
+</body>
+</html>
