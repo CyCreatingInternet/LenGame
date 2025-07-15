@@ -1,295 +1,629 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flappy Ball</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Flappy Ball mit Shop</title>
   <style>
+    /* Grundstyles */
     * {
       box-sizing: border-box;
     }
-
-    body {
-      margin: 0;
+    body, html {
+      margin: 0; padding: 0; height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-image: url('background.png');
-      font-family: 'Segoe UI', sans-serif;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    #gameWrapper {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      position: relative;
-      overflow: hidden;
+      padding: 10px;
     }
-
-    canvas {
+    /* Canvas responsive & ohne Verzerrung */
+    #gameCanvas {
       background-color: #fff;
       border: 4px solid #444;
       border-radius: 12px;
-      max-width: 95vw;
-      max-height: 90vh;
+      max-width: 400px;
+      max-height: 600px;
       width: 100%;
       height: auto;
       display: block;
+      image-rendering: pixelated;
+      touch-action: none;
     }
 
+    /* Overlay-Styles */
     .overlay {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      text-align: center;
-      color: #222;
       background-color: rgba(255, 255, 255, 0.95);
-      padding: 5vw;
+      padding: 30px 35px;
       border-radius: 20px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      width: 80vw;
+      text-align: center;
+      z-index: 2000;
+      width: 90vw;
       max-width: 400px;
+      user-select: none;
     }
-
-    #startScreen, #gameOverScreen {
+    #startScreen, #gameOverScreen, #shopOverlay {
       display: none;
     }
-
     h1 {
       margin-top: 0;
-      font-size: 6vw;
+      font-size: 2.5em;
+      color: #222;
+      text-shadow: 1px 1px 0 #eee;
+    }
+    p {
+      font-size: 1.1em;
+      color: #333;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 0 #eee;
     }
 
     button {
-      padding: 12px 24px;
+      padding: 12px 28px;
       font-size: 1.2em;
-      margin-top: 20px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       background-color: #4CAF50;
       color: white;
       cursor: pointer;
-      transition: background 0.3s;
-      width: 100%;
+      box-shadow: 0 5px 12px rgba(76,175,80,0.7);
+      transition: background-color 0.3s ease, transform 0.15s ease;
+      user-select: none;
+      font-weight: 600;
     }
-
-    button:hover {
+    button:hover, button:focus {
       background-color: #388E3C;
-    }
-
-    .footer-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background-color: transparent;
-      display: flex;
-      justify-content: center;
-      gap: 5vw;
-      padding: 15px 0;
-      z-index: 1000;
-    }
-
-    .nav-button {
-      background-color: antiquewhite;
-      color: grey;
-      border: 2px solid grey;
-      border-radius: 20px;
-      padding: 10px 20px;
-      font-weight: bold;
-      text-decoration: none;
-      font-size: 1em;
-    }
-
-    .nav-button:hover {
-      background-color: grey;
-      color: antiquewhite;
+      outline: none;
       transform: scale(1.05);
+      box-shadow: 0 7px 18px rgba(56,142,60,0.9);
+    }
+
+    /* Score Display oben links */
+    #scoreDisplay {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #222;
+      text-shadow: 1px 1px 0 #eee;
+      z-index: 1500;
+      user-select: none;
+      background: rgba(255 255 255 / 0.8);
+      padding: 6px 14px;
+      border-radius: 12px;
+      min-width: 110px;
+      text-align: center;
+    }
+
+    /* Coins Anzeige */
+    #coinsDisplay {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #222;
+      text-shadow: 1px 1px 0 #eee;
+      z-index: 1500;
+      user-select: none;
+      background: rgba(255 255 255 / 0.8);
+      padding: 6px 14px;
+      border-radius: 12px;
+      min-width: 130px;
+      text-align: center;
+    }
+
+    /* Shop Button (rund, unten mittig) */
+    #shopBtn {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 26px;
+      line-height: 56px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(76, 175, 80, 0.7);
+      user-select: none;
+      z-index: 1100;
+      border: none;
+      transition: background-color 0.3s ease, transform 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #shopBtn:hover,
+    #shopBtn:focus {
+      background-color: #388E3C;
+      outline: none;
+      transform: translateX(-50%) scale(1.1);
+      box-shadow: 0 8px 20px rgba(56, 142, 60, 0.9);
+    }
+
+    /* Shop Overlay Styles */
+    #shopOverlay h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #222;
+      font-size: 2em;
+      text-shadow: 1px 1px 0 #eee;
+    }
+    #shopItems {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 15px;
+      user-select: none;
+    }
+    .shopItem {
+      background: #f9f9f9;
+      border: 2px solid #ddd;
+      border-radius: 15px;
+      width: 110px;
+      padding: 12px 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+    }
+    .shopItem:hover, .shopItem.selected {
+      border-color: #4CAF50;
+      box-shadow: 0 6px 15px rgba(76,175,80,0.5);
+    }
+    .skinBall {
+      font-size: 50px;
+      margin-bottom: 8px;
+      user-select: none;
+      pointer-events: none;
+    }
+    .skinName {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333;
+      user-select: none;
+    }
+    .skinPrice {
+      font-weight: 700;
+      color: #4CAF50;
+      user-select: none;
+      user-select: none;
+    }
+
+    /* Close Shop Button */
+    #closeShopBtn {
+      padding: 10px 20px;
+      background-color: #d32f2f;
+      border-radius: 12px;
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.7);
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.15s ease;
+      user-select: none;
+      display: block;
+      margin: 0 auto;
+      width: 150px;
+    }
+    #closeShopBtn:hover, #closeShopBtn:focus {
+      background-color: #a12828;
+      outline: none;
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(161, 40, 40, 0.9);
+    }
+
+    /* Responsive Text-Anpassung */
+    @media (max-width: 420px) {
+      .overlay {
+        width: 95vw;
+        padding: 25px 20px;
+      }
+      #shopItems {
+        gap: 10px;
+      }
+      .shopItem {
+        width: 90px;
+        padding: 10px 8px;
+      }
+      .skinBall {
+        font-size: 40px;
+      }
+      button, #closeShopBtn {
+        font-size: 1em;
+        padding: 10px 18px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      #shopBtn {
+        width: 50px;
+        height: 50px;
+        font-size: 22px;
+        bottom: 70px;
+      }
     }
   </style>
 </head>
 <body>
+  <div id="gameWrapper">
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-  <canvas id="gameCanvas"></canvas>
+    <!-- Score und Coins -->
+    <div id="scoreDisplay">Score: 0</div>
+    <div id="coinsDisplay">Coins: 0</div>
 
-  <!-- Startscreen -->
-  <div id="startScreen" class="overlay">
-    <h1>Flappy Ball</h1>
-    <p>Drücke den Button oder tippe ins Spiel</p>
-    <button onclick="startGame()">Spiel starten</button>
+    <!-- Startscreen -->
+    <div id="startScreen" class="overlay">
+      <h1>Flappy Ball</h1>
+      <p>Drücke den Button oder tippe ins Spiel</p>
+      <button id="startBtn">Spiel starten</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="overlay">
+      <h1>Game Over</h1>
+      <p id="finalScore">Score: 0</p>
+      <button id="restartBtn">Neu starten</button>
+    </div>
+
+    <!-- Shop Overlay -->
+    <div id="shopOverlay" class="overlay">
+      <h2>Shop</h2>
+      <div id="shopItems"></div>
+      <button id="closeShopBtn">Schließen</button>
+    </div>
+
+    <!-- Shop Button -->
+    <button id="shopBtn" aria-label="Shop">
+      🛒
+    </button>
   </div>
 
-  <!-- Game Over Screen -->
-  <div id="gameOverScreen" class="overlay">
-    <h1>Game Over</h1>
-    <p id="finalScore">Score: 0</p>
-    <button onclick="resetGame()">Neu starten</button>
-  </div>
+<script>
+(() => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const startScreen = document.getElementById('startScreen');
+  const gameOverScreen = document.getElementById('gameOverScreen');
+  const finalScore = document.getElementById('finalScore');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const coinsDisplay = document.getElementById('coinsDisplay');
+  const shopBtn = document.getElementById('shopBtn');
+  const shopOverlay = document.getElementById('shopOverlay');
+  const closeShopBtn = document.getElementById('closeShopBtn');
+  const shopItemsContainer = document.getElementById('shopItems');
 
-  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const startScreen = document.getElementById('startScreen');
-    const gameOverScreen = document.getElementById('gameOverScreen');
-    const finalScore = document.getElementById('finalScore');
+  // Device pixel ratio für scharfe Darstellung
+  function setupCanvasScaling() {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = 400 * dpr;
+    canvas.height = 600 * dpr;
+    canvas.style.width = '400px';
+    canvas.style.height = '600px';
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+    ctx.scale(dpr, dpr);
+  }
+  setupCanvasScaling();
 
-    // Dynamisches Canvas
-    function resizeCanvas() {
-      const ratio = 2 / 3; // Breite:Höhe-Verhältnis
-      const width = Math.min(window.innerWidth * 0.95, 400);
-      canvas.width = width;
-      canvas.height = width / ratio;
-    }
+  // Game variables
+  let running = false;
+  let gameOver = false;
+  let score = 0;
+  let coins = 0;
 
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
+  const bird = {
+    x: 60,
+    y: 250,
+    radius: 12,
+    gravity: 0.4,
+    lift: -6.5,
+    velocity: 0,
+    color: 'yellow',
+    update() {
+      this.velocity += this.gravity;
+      this.y += this.velocity;
 
-    let running = false;
-    let gameOver = false;
-
-    const bird = {
-      x: 60,
-      y: 250,
-      radius: 12,
-      gravity: 0.4,
-      lift: -6.5,
-      velocity: 0,
-      update() {
-        this.velocity += this.gravity;
-        this.y += this.velocity;
-
-        if (this.y + this.radius > canvas.height) {
-          this.y = canvas.height - this.radius;
-          this.velocity = 0;
-          endGame();
-        }
-
-        if (this.y - this.radius < 0) {
-          this.y = this.radius;
-          this.velocity = 0;
-        }
-      },
-      jump() {
-        this.velocity = this.lift;
-      },
-      draw() {
-        ctx.fillStyle = "yellow";
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#000";
-        ctx.stroke();
+      if (this.y + this.radius > 600) {
+        this.y = 600 - this.radius;
+        this.velocity = 0;
+        endGame();
       }
-    };
-
-    let pipes = [];
-    const pipeWidth = 60;
-    const pipeGap = 150;
-    let pipeTimer = 0;
-    let score = 0;
-
-    function spawnPipe() {
-      const top = Math.floor(Math.random() * 250) + 50;
-      pipes.push({ x: canvas.width, top });
+      if (this.y - this.radius < 0) {
+        this.y = this.radius;
+        this.velocity = 0;
+      }
+    },
+    jump() {
+      this.velocity = this.lift;
+    },
+    draw() {
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
+  };
 
-    function updatePipes() {
-      pipeTimer++;
-      if (pipeTimer % 100 === 0) spawnPipe();
+  let pipes = [];
+  const pipeWidth = 60;
+  const pipeGap = 150;
+  let pipeTimer = 0;
 
-      for (let i = 0; i < pipes.length; i++) {
-        pipes[i].x -= 2;
+  function spawnPipe() {
+    const top = Math.floor(Math.random() * 250) + 50;
+    pipes.push({ x: 400, top });
+  }
 
-        const p = pipes[i];
-        if (
-          bird.x + bird.radius > p.x &&
-          bird.x - bird.radius < p.x + pipeWidth &&
-          (
-            bird.y - bird.radius < p.top ||
-            bird.y + bird.radius > p.top + pipeGap
-          )
-        ) {
-          endGame();
-        }
+  function updatePipes() {
+    pipeTimer++;
+    if (pipeTimer % 100 === 0) spawnPipe();
 
-        if (p.x + pipeWidth < 0) {
-          pipes.splice(i, 1);
-          i--;
-          score++;
-        }
+    for (let i = 0; i < pipes.length; i++) {
+      pipes[i].x -= 2;
+      const p = pipes[i];
+
+      if (
+        bird.x + bird.radius > p.x &&
+        bird.x - bird.radius < p.x + pipeWidth &&
+        (bird.y - bird.radius < p.top || bird.y + bird.radius > p.top + pipeGap)
+      ) {
+        endGame();
+      }
+
+      if (p.x + pipeWidth < 0) {
+        pipes.splice(i, 1);
+        i--;
+        score++;
+        coins++;
+        updateScoreDisplay();
+        updateCoinsDisplay();
       }
     }
+  }
 
-    function drawPipes() {
-      ctx.fillStyle = "#4CAF50";
-      pipes.forEach(p => {
-        ctx.fillRect(p.x, 0, pipeWidth, p.top);
-        ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - p.top - pipeGap);
+  function drawPipes() {
+    ctx.fillStyle = "#4CAF50";
+    pipes.forEach(p => {
+      ctx.fillRect(p.x, 0, pipeWidth, p.top);
+      ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, 600 - p.top - pipeGap);
+    });
+  }
+
+  function updateScoreDisplay() {
+    scoreDisplay.textContent = "Score: " + score;
+  }
+
+  function updateCoinsDisplay() {
+    coinsDisplay.textContent = "Coins: " + coins;
+  }
+
+  function startGame() {
+    running = true;
+    gameOver = false;
+    score = 0;
+    bird.y = 250;
+    bird.velocity = 0;
+    pipes = [];
+    pipeTimer = 0;
+    bird.color = skins[activeSkin].color;
+    updateScoreDisplay();
+    updateCoinsDisplay();
+    startScreen.style.display = "none";
+    gameOverScreen.style.display = "none";
+    shopBtn.style.display = "flex";
+    loop();
+  }
+
+  function endGame() {
+    running = false;
+    gameOver = true;
+    finalScore.textContent = "Score: " + score;
+    gameOverScreen.style.display = "block";
+  }
+
+  function resetGame() {
+    startGame();
+  }
+
+  function loop() {
+    if (!running) return;
+    ctx.clearRect(0, 0, 400, 600);
+    bird.update();
+    bird.draw();
+    updatePipes();
+    drawPipes();
+    requestAnimationFrame(loop);
+  }
+
+  // Controls
+  function jumpAction() {
+    if (running) {
+      bird.jump();
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && running) jumpAction();
+  });
+
+  canvas.addEventListener('click', () => {
+    if (running) jumpAction();
+    else if (!gameOver) startGame();
+  });
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (running) jumpAction();
+    else if (!gameOver) startGame();
+  }, { passive: false });
+
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', resetGame);
+
+  // SHOP STUFF
+  // Skins Daten
+  const skins = [
+    { id: 0, name: "Gelb", color: "yellow", price: 0 },
+    { id: 1, name: "Rot", color: "red", price: 10 },
+    { id: 2, name: "Blau", color: "deepskyblue", price: 15 },
+    { id: 3, name: "Lila", color: "purple", price: 20 },
+    { id: 4, name: "Grün", color: "limegreen", price: 25 },
+  ];
+  let activeSkin = 0;
+  let ownedSkins = [0]; // Gelb standardmäßig
+
+  // Laden/ Speichern aus LocalStorage (optional)
+  if (localStorage.getItem('flappyCoins')) {
+    coins = parseInt(localStorage.getItem('flappyCoins'), 10);
+  }
+  if (localStorage.getItem('flappyOwnedSkins')) {
+    ownedSkins = JSON.parse(localStorage.getItem('flappyOwnedSkins'));
+  }
+  if (localStorage.getItem('flappyActiveSkin')) {
+    activeSkin = parseInt(localStorage.getItem('flappyActiveSkin'), 10);
+  }
+  updateCoinsDisplay();
+
+  function saveProgress() {
+    localStorage.setItem('flappyCoins', coins);
+    localStorage.setItem('flappyOwnedSkins', JSON.stringify(ownedSkins));
+    localStorage.setItem('flappyActiveSkin', activeSkin);
+  }
+
+  function renderShop() {
+    shopItemsContainer.innerHTML = "";
+    skins.forEach(skin => {
+      const div = document.createElement('div');
+      div.className = 'shopItem';
+      if (activeSkin === skin.id) div.classList.add('selected');
+
+      const ball = document.createElement('div');
+      ball.className = 'skinBall';
+      ball.style.color = skin.color;
+      ball.textContent = '●';
+
+      const name = document.createElement('div');
+      name.className = 'skinName';
+      name.textContent = skin.name;
+
+      const price = document.createElement('div');
+      price.className = 'skinPrice';
+      if (ownedSkins.includes(skin.id)) {
+        price.textContent = "✓ Gekauft";
+        price.style.color = "#4CAF50";
+      } else {
+        price.textContent = skin.price + " Coins";
+        price.style.color = "#888";
+      }
+
+      div.appendChild(ball);
+      div.appendChild(name);
+      div.appendChild(price);
+
+      div.addEventListener('click', () => {
+        if (ownedSkins.includes(skin.id)) {
+          // Skin auswählen
+          activeSkin = skin.id;
+          bird.color = skin.color;
+          updateSkinSelection();
+          saveProgress();
+        } else if (coins >= skin.price) {
+          // Skin kaufen
+          coins -= skin.price;
+          ownedSkins.push(skin.id);
+          activeSkin = skin.id;
+          bird.color = skin.color;
+          updateCoinsDisplay();
+          updateSkinSelection();
+          saveProgress();
+        } else {
+          alert("Nicht genug Coins!");
+        }
       });
-    }
 
-    function drawScore() {
-      ctx.fillStyle = "#333";
-      ctx.font = "24px Arial";
-      ctx.fillText("Score: " + score, 15, 35);
-    }
-
-    function startGame() {
-      startScreen.style.display = "none";
-      gameOverScreen.style.display = "none";
-      running = true;
-      gameOver = false;
-      score = 0;
-      bird.y = canvas.height / 2;
-      bird.velocity = 0;
-      pipes = [];
-      pipeTimer = 0;
-      loop();
-    }
-
-    function endGame() {
-      running = false;
-      gameOver = true;
-      finalScore.textContent = "Score: " + score;
-      gameOverScreen.style.display = "block";
-    }
-
-    function resetGame() {
-      startGame();
-    }
-
-    function loop() {
-      if (!running) return;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      bird.update();
-      bird.draw();
-
-      updatePipes();
-      drawPipes();
-
-      drawScore();
-
-      requestAnimationFrame(loop);
-    }
-
-    document.addEventListener("keydown", e => {
-      if (e.code === "Space" && running) bird.jump();
+      shopItemsContainer.appendChild(div);
     });
+  }
 
-    canvas.addEventListener("click", () => {
-      if (running) {
-        bird.jump();
-      } else if (!gameOver) {
-        startGame();
+  function updateSkinSelection() {
+    const items = shopItemsContainer.querySelectorAll('.shopItem');
+    items.forEach((item, idx) => {
+      if (skins[idx].id === activeSkin) {
+        item.classList.add('selected');
+        const priceDiv = item.querySelector('.skinPrice');
+        priceDiv.textContent = "✓ Ausgewählt";
+        priceDiv.style.color = "#388E3C";
+      } else if (ownedSkins.includes(skins[idx].id)) {
+        item.classList.remove('selected');
+        const priceDiv = item.querySelector('.skinPrice');
+        priceDiv.textContent = "✓ Gekauft";
+        priceDiv.style.color = "#4CAF50";
+      } else {
+        item.classList.remove('selected');
+        const priceDiv = item.querySelector('.skinPrice');
+        priceDiv.textContent = skins[idx].price + " Coins";
+        priceDiv.style.color = "#888";
       }
     });
+  }
 
-    canvas.addEventListener("touchstart", () => {
-      if (running) {
-        bird.jump();
-      } else if (!gameOver) {
-        startGame();
-      }
-    });
+  // Shop Button Öffnen/Schließen mit Button ausblenden
+  shopBtn.addEventListener('click', () => {
+    running = false;
+    gameOver = false;
+    startScreen.style.display = "none";
+    gameOverScreen.style.display = "none";
+    shopOverlay.style.display = "block";
+    shopBtn.style.display = "none";
+    renderShop();
+    updateCoinsDisplay();
+  });
 
+  closeShopBtn.addEventListener('click', () => {
+    shopOverlay.style.display = "none";
     startScreen.style.display = "block";
-  </script>
+    shopBtn.style.display = "flex";
+  });
+
+  // Beim Laden den Startscreen anzeigen
+  startScreen.style.display = "block";
+  updateScoreDisplay();
+  updateCoinsDisplay();
+
+})();
+</script>
 </body>
 </html>
