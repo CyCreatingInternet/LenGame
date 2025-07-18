@@ -17,6 +17,8 @@
       background-position: center;
       background-attachment: fixed;
       overflow: hidden;
+      height: 100%;
+      touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -63,6 +65,8 @@
     }
     #startScreen, #gameOverScreen, #shopOverlay {
       display: none;
+      max-height: 90vh;
+      overflow-y: auto;
     }
     h1 {
       margin-top: 0;
@@ -501,6 +505,13 @@
     { id: 2, name: "Blau", color: "deepskyblue", price: 15 },
     { id: 3, name: "Lila", color: "purple", price: 20 },
     { id: 4, name: "Grün", color: "limegreen", price: 25 },
+    { id: 5, name: "Orange", color: "orange", price: 30 },
+    { id: 6, name: "Pink (free)", color: "pink", price: 0 },
+    { id: 7, name: "Gold", color: "gold", price: 50 },
+    { id: 8, name: "Silber", color: "silver", price: 55 },
+    { id: 9, name: "Bronze", color: "#cd7f32", price: 60 }
+
+
   ];
   let activeSkin = 0;
   let ownedSkins = [0]; // Gelb standardmäßig
