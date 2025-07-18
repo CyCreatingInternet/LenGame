@@ -36,6 +36,7 @@
       gap: 20px;
       align-items: center;
       user-select: none;
+      flex-wrap: wrap;
     }
 
     #ui div {
@@ -57,21 +58,23 @@
       top: 80px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(255,255,255,0.98);
+      background: rgba(255, 255, 255, 0.98);
       padding: 20px;
       border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
       display: none;
       flex-wrap: wrap;
       gap: 15px;
       justify-content: center;
       z-index: 10;
-      max-width: 90vw;
+      max-width: 95vw;
+      max-height: 70vh;
+      overflow-y: auto;
     }
 
     .skin {
-      width: 80px;
-      height: 80px;
+      width: 90px;
+      height: 90px;
       border-radius: 10px;
       cursor: pointer;
       display: flex;
@@ -79,9 +82,10 @@
       align-items: center;
       font-weight: bold;
       color: white;
-      font-size: 0.9em;
+      font-size: 0.8em;
       position: relative;
       text-shadow: 1px 1px 2px black;
+      flex-shrink: 0;
     }
 
     .selected {
@@ -118,6 +122,24 @@
       font-size: 0.95em;
       color: #555;
     }
+
+    #closeShop {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    #closeShop button {
+      padding: 6px 14px;
+      border: none;
+      background: #e53935;
+      color: white;
+      border-radius: 10px;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -128,7 +150,7 @@
   </div>
 
   <div id="shop">
-    <div id="shopInfo">Tippe auf ein Skin, um es zu kaufen oder zu aktivieren</div>
+    <!-- Wird dynamisch erstellt -->
   </div>
 
   <canvas id="gameCanvas"></canvas>
@@ -143,7 +165,6 @@
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    // === Game State ===
     let stack = [{ x: canvas.width / 2 - 100, y: 0, width: 200 }];
     let currentBlock = { x: 0, y: 30, width: 200, dir: 3 };
     let score = 0;
@@ -159,7 +180,12 @@
       fire: 50,
       ice: 50,
       dark: 50,
-      gold: 1000
+      gold: 1000,
+      neon: 150,
+      pixel: 120,
+      forest: 100,
+      sunset: 130,
+      aqua: 110
     };
 
     const skins = {
@@ -168,12 +194,16 @@
       fire: ["#ff5722", "#ff9800", "#ffc107"],
       ice: ["#00bcd4", "#03a9f4", "#2196f3"],
       dark: ["#444", "#666", "#222"],
-      gold: ["#FFD700", "#FFC700", "#FFB700"]
+      gold: ["#FFD700", "#FFC700", "#FFB700"],
+      neon: ["#0ff", "#f0f", "#0f0", "#ff0"],
+      pixel: ["#000", "#fff", "#444", "#ccc"],
+      forest: ["#2e7d32", "#388e3c", "#1b5e20"],
+      sunset: ["#ff8a65", "#ff7043", "#ff5722", "#e64a19"],
+      aqua: ["#00ffff", "#40e0d0", "#5f9ea0"]
     };
 
     const skinColors = Object.entries(skins);
 
-    // === UI ===
     const scoreDiv = document.getElementById("score");
     const coinsDiv = document.getElementById("coins");
     const shopBtn = document.getElementById("shopBtn");
@@ -272,6 +302,15 @@
 
     function createShop() {
       shop.innerHTML = '';
+
+      const closeDiv = document.createElement("div");
+      closeDiv.id = "closeShop";
+      const closeBtn = document.createElement("button");
+      closeBtn.textContent = "✖ Schließen";
+      closeBtn.onclick = () => shop.style.display = "none";
+      closeDiv.appendChild(closeBtn);
+      shop.appendChild(closeDiv);
+
       const info = document.createElement("div");
       info.id = "shopInfo";
       info.textContent = "Tippe auf ein Skin, um es zu kaufen oder zu aktivieren";
