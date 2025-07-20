@@ -103,7 +103,27 @@
     </div>
 
     <script>
-        const wordList = ["javascript", "hangman", "programming", "computer", "internet"];
+        const wordList = [
+  "javascript", "hangman", "programming", "computer", "internet",
+  "haus", "auto", "baum", "blume", "straße", "stuhl", "tisch", "lampe",
+  "buch", "fenster", "tür", "kaffee", "tee", "wasser", "brot", "butter",
+  "milch", "käse", "schule", "lehrer", "freund", "familie", "hund", "katze",
+  "vogel", "fahrrad", "bahn", "bus", "uhr", "handy", "telefon", "kamera",
+  "papier", "stift", "heft", "notiz", "auto", "tank", "reifen", "kofferraum",
+  "musik", "film", "kino", "fernseher", "sofa", "bett", "kissen", "decke",
+  "kleidung", "hose", "hemd", "jacke", "schuh", "socke", "mütze", "handschuh",
+  "regen", "sonne", "wind", "schnee", "wetter", "wolke", "himmel", "mond",
+  "stern", "erde", "sand", "strand", "meer", "fluss", "berg", "wald", "insel",
+  "urlaub", "reise", "hotel", "ticket", "pass", "koffer", "flughafen", "flieger",
+  "essen", "trinken", "obst", "gemüse", "apfel", "birne", "banane", "karotte",
+  "salat", "kartoffel", "tomate", "gurke", "reis", "nudeln", "pizza", "suppe",
+  "programmieren", "debuggen", "variable", "funktion", "array", "objekt",
+  "klasse", "modul", "syntax", "datenbank", "server", "client", "netzwerk",
+  "browser", "seite", "link", "login", "passwort", "admin", "email", "konto",
+  "benutzer", "profil", "update", "download", "upload", "datei", "ordner",
+  "system", "software", "hardware", "drucker", "monitor", "tastatur", "maus"
+];
+
         const secretWord = wordList[Math.floor(Math.random() * wordList.length)].toLowerCase();
         let displayedWord = Array(secretWord.length).fill("_");
         let wrongGuesses = [];
