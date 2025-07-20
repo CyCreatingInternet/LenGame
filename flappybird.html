@@ -276,12 +276,19 @@
       }
     }
     @media (max-width: 768px) {
-  #gameCanvas {
-    max-width: 95vw;
-    max-height: 85vh;
-    border-width: 1.5px;
-    border-radius: 16px;
-  }
+#gameCanvas {
+  background-color: #fff;
+  border: 2px solid #444;
+  border-radius: 12px;
+  max-width: 400px;
+  max-height: 600px;
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+  touch-action: none;
+}
+
 
   .overlay {
     width: 95vw;
@@ -396,15 +403,15 @@
   const shopItemsContainer = document.getElementById('shopItems');
 
   // Device pixel ratio für scharfe Darstellung
-  function setupCanvasScaling() {
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = 400 * dpr;
-    canvas.height = 600 * dpr;
-    canvas.style.width = '400px';
-    canvas.style.height = '600px';
-    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
-    ctx.scale(dpr, dpr);
-  }
+function setupCanvasScaling() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+}
+
   setupCanvasScaling();
 
   // Game variables
